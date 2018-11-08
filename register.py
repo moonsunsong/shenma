@@ -13,20 +13,20 @@ class Register_UI(Ui_MainWindow,QMainWindow):
         self.setupUi(self)
         self.initUI()
     def initUI(self):
-        self.pushButton.clicked.connect(self.get_u_p)
+        self.btnRegist.clicked.connect(self.get_u_p)
         self.checkBox.stateChanged.connect(self.promise)
         self.show()
     
     def promise(self):
         if self.checkBox.checkState() == Qt.Checked:
-            self.pushButton.setEnabled(True)
+            self.btnRegist.setEnabled(True)
         elif self.checkBox.checkState() == Qt.Unchecked:
-            self.pushButton.setEnabled(False)
+            self.btnRegist.setEnabled(False)
 
     def get_u_p(self):
-        username = self.lineEdit.text()
-        password = self.lineEdit_2.text()
-        password2 = self.lineEdit_3.text()
+        username = self.lineUsername.text()
+        password = self.linePass.text()
+        password2 = self.linePass2.text()
         if not username or not password or not password2:
             QMessageBox.about(self,'警告','请填写完整信息!')
             return
