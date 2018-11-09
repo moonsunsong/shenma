@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
+'''
+注册界面UI
+'''
 
-# Form implementation generated from reading ui file 'e:\prioject\dictionary\register.ui'
-#
-# Created by: PyQt5 UI code generator 5.11.3
-#
-# WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 

@@ -1,3 +1,6 @@
+'''
+这是注册界面的控制代码
+'''
 from PyQt5.QtWidgets import QWidget,QApplication,QMainWindow,QMessageBox
 from Ui_register import *
 from PyQt5.QtCore import Qt
@@ -6,6 +9,16 @@ import pymysql
 import tools.mysqltool as mysqltool
 from socket import *
 
+HOST = '127.0.0.1'
+PORT = 7777
+ADDR = (HOST,PORT)
+
+def varify_info(sockfd,username,password):
+    msg = "R %s %s"%(username,password)
+    sockfd.send(msg.encode())
+    r = sockfd.recv(128).decode()
+    return r
+    
 
 class Register_UI(Ui_MainWindow,QMainWindow):
     def __init__(self):
@@ -34,11 +47,25 @@ class Register_UI(Ui_MainWindow,QMainWindow):
             QMessageBox.about(self,'警告','两次密码不一致')
             return
         
-        # 发送信息给服务器
+        # 发送信息(用户名和密码)给服务器
+        sockfd = socket()
+        sockfd.connect(ADDR)
+        r = varify_info(sockfd,username,password)
+        if r == 'OK':
+            # 注册成功
+            QMessageBox.about(self,'完成','注册成功!')
+            return
+        elif r == "USED":
+            # 用户名已存在
+            QMessageBox.about(self,'警告','该用户已存在!')
+            return
+        else:
+            # 服务器故障
+            QMessageBox.about(self,'警告','服务器故障!')
+            return
 
-
-        # 进入数据库查询
-        self.linkDB(username,password)
+        # 进入数据库查询(测试)
+        # self.linkDB(username,password)
 
     def linkDB(self,username,password):
         msql = mysqltool.Mysqltool('tt')
@@ -58,6 +85,7 @@ class Register_UI(Ui_MainWindow,QMainWindow):
             print("插入数据库失败")
             return
         QMessageBox.about(self,'完成','注册成功!')
+        # 登录成功隐藏注册界面
         self.hide()
 
         
