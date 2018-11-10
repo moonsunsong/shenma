@@ -9,7 +9,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(394, 336)
+        MainWindow.resize(400, 340)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
@@ -81,17 +81,24 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        # 添加 返回登录 的按钮
+        self.btnReturnLogin = QtWidgets.QPushButton(self)
+        self.btnReturnLogin.setObjectName("btnReturnLogin")
+        self.btnReturnLogin.setGeometry(QtCore.QRect(312, 290, 68, 30))
+
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "神马网盘"))
         self.laUsername.setText(_translate("MainWindow", " 用户名："))
         self.laPass1.setText(_translate("MainWindow", "   密码："))
         self.laPass2.setText(_translate("MainWindow", "确认密码："))
         self.btnRegist.setText(_translate("MainWindow", "注册"))
         self.laWarning.setText(_translate("MainWindow", "警告："))
         self.checkBox.setText(_translate("MainWindow", "请勿使用本网盘上传非法文件，否则后果自负！"))
+        self.btnReturnLogin.setText(_translate("MainWindow", "返回登录"))
 

@@ -28,6 +28,7 @@ class Register_UI(Ui_MainWindow,QMainWindow):
     def initUI(self):
         self.btnRegist.clicked.connect(self.get_u_p)
         self.checkBox.stateChanged.connect(self.promise)
+        self.btnReturnLogin.clicked.connect(self.toLogin)
         self.show()
     
     def promise(self):
@@ -35,6 +36,10 @@ class Register_UI(Ui_MainWindow,QMainWindow):
             self.btnRegist.setEnabled(True)
         elif self.checkBox.checkState() == Qt.Unchecked:
             self.btnRegist.setEnabled(False)
+    def toLogin(self):
+        # 显示登录界面
+        pass
+
 
     def get_u_p(self):
         username = self.lineUsername.text()
@@ -54,6 +59,7 @@ class Register_UI(Ui_MainWindow,QMainWindow):
         if r == 'OK':
             # 注册成功
             QMessageBox.about(self,'完成','注册成功!')
+            self.toLogin()
             return
         elif r == "USED":
             # 用户名已存在
