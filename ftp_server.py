@@ -15,7 +15,9 @@ PORT = 7777
 ADDR = (HOST,PORT)
 
 FILE_PATH = "/home/tarena/serverfiles/"
-
+# 连接数据库
+msql = mysqltool.Mysqltool('tt')
+msql.open()
 class FtpServer():
     def __init__(self,connfd):
         self.connfd = connfd
@@ -31,7 +33,22 @@ class FtpServer():
         username = l[1]
         password = l[2]
         # 进入数据库进行比对
-
+        sql = "select username from userinfo where username=%s and password=%s"
+        try:
+            info = msql.all(sql,[username,password])
+            print(info)
+        except:
+            print("服务器查询失败")
+            # 发送失败标志
+            connfd.send(b'ServerError')
+            return
+        if info != ():
+            print("ok")
+            # 发送登录成功标志
+            connfd.send(b'SUCCESS')
+        else:
+            connfd.send(b'FAIL')
+        
     def do_download(self,filename):
         try:
             fd = open(FILE_PATH+filename,'rb')
@@ -70,8 +87,6 @@ class FtpServer():
             fd.write(data)
         fd.close()
     def linkDB(self,connfd,username,password):
-        msql = mysqltool.Mysqltool('tt')
-        msql.open()
         try:
             l = msql.all("select username from userinfo")
         except:
@@ -84,11 +99,13 @@ class FtpServer():
                 connfd.send(b'USED')
                 return
         # 将数据存入数据库
+        sql = "insert into userinfo(username,password) values('%s','%s')"%(username,password)
         try:
-            msql.insert_update_delete("insert into userinfo(username,password) values('%s','%s')"%(username,password))
+            msql.insert_update_delete(sql)
         except:
             print("插入数据库失败")
             connfd.send(b'Error')
+            msql.close()
             return
         # 插入数据库成功
         connfd.send(b"OK")
@@ -96,9 +113,12 @@ class FtpServer():
 
 def handle(connfd):
     ftp = FtpServer(connfd)
-    print("3")
-    data = connfd.recv(1024).decode()
-    print(data)
+    try:
+        data = connfd.recv(1024).decode()
+        print(data)
+    except:
+        connfd.close()
+        sys.exit("客户端断开")
     if not data or data[0]=="Q":
         print("in")
         connfd.close()
@@ -136,10 +156,8 @@ def main():
 
         # 创建子进程
         p = Process(target=handle,args=(connfd,))
-        print("1")
         p.daemon = True
         p.start()
-        print("2")
         # pid = os.fork()
         # if pid == 0:
         #     p = os.fork()
@@ -165,30 +183,8 @@ def main():
         #     connfd.close()
         #     os.wait()
 
-
-
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
