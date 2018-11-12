@@ -85,7 +85,10 @@ class Ui_MainWindow(object):
         self.btnReturnLogin = QtWidgets.QPushButton(self)
         self.btnReturnLogin.setObjectName("btnReturnLogin")
         self.btnReturnLogin.setGeometry(QtCore.QRect(312, 290, 68, 30))
-
+        # 增加消息提示标签
+        self.laTip = QtWidgets.QLabel(self)
+        self.laTip.setGeometry(QtCore.QRect(15, 315, 120, 12))
+        self.laTip.setObjectName("laTip")
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -101,4 +104,4 @@ class Ui_MainWindow(object):
         self.laWarning.setText(_translate("MainWindow", "警告："))
         self.checkBox.setText(_translate("MainWindow", "请勿使用本网盘上传非法文件，否则后果自负！"))
         self.btnReturnLogin.setText(_translate("MainWindow", "返回登录"))
-
+        self.laTip.setText(_translate("MainWindow", ""))

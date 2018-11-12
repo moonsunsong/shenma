@@ -7,8 +7,6 @@ import Ui_register
 import Ui_login
 from PyQt5.QtCore import Qt,QRect
 import sys
-# import pymysql
-import tools.mysqltool as mysqltool
 from socket import *
 
 HOST = '176.209.102.47'
@@ -22,8 +20,9 @@ def varify_info(sockfd,username,password,mod):
     return r
 
 class Login_UI(Ui_login.Ui_MainWindow,QMainWindow):
-    def __init__(self):
+    def __init__(self,ui_control):
         super().__init__()
+        self.ui_control = ui_control
         self.setupUi(self)
         self.initUI()
         
@@ -37,12 +36,7 @@ class Login_UI(Ui_login.Ui_MainWindow,QMainWindow):
         if not username or not password:
             QMessageBox.about(self,'警告','请填写完整信息!')
             return
-        try:
-            sockfd = socket()
-            sockfd.connect(ADDR)
-        except:
-            QMessageBox.about(self,'信息','无法连接服务器!')
-            return
+        sockfd = self.ui_control.sockfd
         r = varify_info(sockfd,username,password,"L")#L代表登录
         if r == 'SUCCESS':
             # 登录成功,进入网盘客户端界面
@@ -52,12 +46,9 @@ class Login_UI(Ui_login.Ui_MainWindow,QMainWindow):
             QMessageBox.about(self,'信息','用户名或密码错误!')
         elif r == 'ServerError':
             QMessageBox.about(self,'信息','服务器出错!')
-        sockfd.close()
     def toRegister(self):
         self.hide()
-        self.register_ui = Register_UI_Control()
-        self.register_ui.show()
-
+        self.ui_control.show()
 
 
 class Register_UI_Control(Ui_register.Ui_MainWindow,QMainWindow):
@@ -69,19 +60,31 @@ class Register_UI_Control(Ui_register.Ui_MainWindow,QMainWindow):
     def initUI(self):
         self.btnRegist.clicked.connect(self.doRegister)
         self.checkBox.stateChanged.connect(self.promise)
-        self.btnReturnLogin.clicked.connect(self.toLogin)
+        self.btnReturnLogin.clicked.connect(self.returnLogin)
         # 初始化完成,显示界面
         self.show()
+        try:
+            self.sockfd.connect(ADDR)
+        except:
+            self.laTip.setText("无法连接服务器!")
+            return
     def promise(self):
         if self.checkBox.checkState() == Qt.Checked:
             self.btnRegist.setEnabled(True)
         elif self.checkBox.checkState() == Qt.Unchecked:
             self.btnRegist.setEnabled(False)
-    def toLogin(self):
+    def returnLogin(self):
+        try:
+            self.login_ui.show()
+            self.hide()
+        except AttributeError:
+            self.initLogin()
+        return
+    def initLogin(self):
         # 显示登录界面
         self.hide()
         # 登录界面初始化
-        self.login_ui = Login_UI()
+        self.login_ui = Login_UI(self)
         self.login_ui.show()
     # 处理注册的逻辑
     def doRegister(self):
@@ -98,19 +101,12 @@ class Register_UI_Control(Ui_register.Ui_MainWindow,QMainWindow):
         if  password != password2:
             QMessageBox.about(self,'警告','两次密码不一致')
             return
-        # 发送信息(用户名和密码)给服务器
-        try:
-            # sockfd = socket()
-            self.sockfd.connect(ADDR)
-        except:
-            QMessageBox.about(self,'信息','无法连接服务器!')
-            return
+
         r = varify_info(self.sockfd,username,password,"R")#R代表注册
         if r == 'OK':
             # 注册成功
             QMessageBox.about(self,'完成','注册成功!')
-            self.toLogin()
-            return
+            self.returnLogin()
         elif r == "USED":
             # 用户名已存在
             QMessageBox.about(self,'警告','该用户已存在!')
@@ -119,30 +115,6 @@ class Register_UI_Control(Ui_register.Ui_MainWindow,QMainWindow):
             # 服务器故障
             QMessageBox.about(self,'警告','服务器故障!')
             return
-
-        # 进入数据库查询(测试)
-        # self.linkDB(username,password)
-
-    # def linkDB(self,username,password):
-    #     msql = mysqltool.Mysqltool('tt')
-    #     msql.open()
-    #     try:
-    #         l = msql.all("select username from userinfo")
-    #     except:
-    #         print("数据库出错!")
-    #     for i in l:
-    #         if i[0] == username:
-    #             QMessageBox.about(self,'警告','该用户已存在!')
-    #             return
-    #     # 将数据存入数据库
-    #     try:
-    #         msql.insert_update_delete("insert into userinfo(username,password) values('%s','%s')"%(username,password))
-    #     except:
-    #         print("插入数据库失败")
-    #         return
-    #     QMessageBox.about(self,'完成','注册成功!')
-    #     # 登录成功隐藏注册界面
-    #     self.hide()
 
 
 

@@ -113,23 +113,24 @@ class FtpServer():
 
 def handle(connfd):
     ftp = FtpServer(connfd)
-    try:
-        data = connfd.recv(1024).decode()
-        print(data)
-    except:
-        connfd.close()
-        sys.exit("客户端断开")
-    if not data or data[0]=="Q":
-        print("in")
-        connfd.close()
-        sys.exit(0)
-    elif data[0] == "R":#代表发来的是注册信息
-        ftp.do_register(data,connfd)
-    elif data[0] == 'L':#代表发来的是登录消息
-        ftp.do_login(data,connfd)
-    elif data[0] == 'U':
-        filename = data.split(" ")[-1]
-        ftp.do_upload(filename)
+    while True:
+        try:
+            data = connfd.recv(1024).decode()
+            print(data,"118")
+        except:
+            connfd.close()
+            sys.exit("客户端断开")
+        if not data or data[0]=="Q":
+            print("in,123")
+            connfd.close()
+            sys.exit(0)
+        elif data[0] == "R":#代表发来的是注册信息
+            ftp.do_register(data,connfd)
+        elif data[0] == 'L':#代表发来的是登录消息
+            ftp.do_login(data,connfd)
+        elif data[0] == 'U':
+            filename = data.split(" ")[-1]
+            ftp.do_upload(filename)
     connfd.close()
     sys.exit("客户端断开")
 
