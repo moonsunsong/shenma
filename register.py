@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget,QApplication,QMainWindow,QMessageBox
 from Ui_register import *
 from PyQt5.QtCore import Qt
 import sys
-import pymysql
+# import pymysql
 import tools.mysqltool as mysqltool
 from socket import *
 
@@ -38,27 +38,27 @@ class Register_UI(Ui_MainWindow,QMainWindow):
 
 
         # 进入数据库查询
-        self.linkDB(username,password)
+        # self.linkDB(username,password)
 
-    def linkDB(self,username,password):
-        msql = mysqltool.Mysqltool('tt')
-        msql.open()
-        try:
-            l = msql.all("select username from userinfo")
-        except:
-            print("数据库出错!")
-        for i in l:
-            if i[0] == username:
-                QMessageBox.about(self,'警告','该用户已存在!')
-                return
-        # 将数据存入数据库
-        try:
-            msql.insert_update_delete("insert into userinfo(username,password) values('%s','%s')"%(username,password))
-        except:
-            print("插入数据库失败")
-            return
-        QMessageBox.about(self,'完成','注册成功!')
-        self.hide()
+    # def linkDB(self,username,password):
+    #     msql = mysqltool.Mysqltool('tt')
+    #     msql.open()
+    #     try:
+    #         l = msql.all("select username from userinfo")
+    #     except:
+    #         print("数据库出错!")
+    #     for i in l:
+    #         if i[0] == username:
+    #             QMessageBox.about(self,'警告','该用户已存在!')
+    #             return
+    #     # 将数据存入数据库
+    #     try:
+    #         msql.insert_update_delete("insert into userinfo(username,password) values('%s','%s')"%(username,password))
+    #     except:
+    #         print("插入数据库失败")
+    #         return
+    #     QMessageBox.about(self,'完成','注册成功!')
+    #     self.hide()
 
         
         
