@@ -3,36 +3,52 @@ ftp 文件服务器程序
 fork server训练
 '''
 from socket import *
-import os,sys
+import os
+import sys
 import time
-
+import tools.mysqltool as mysqltool
+from socket import *
+from multiprocessing import Process
 # 全局变量设置
 HOST = '0.0.0.0'
 PORT = 7777
 ADDR = (HOST,PORT)
 
 FILE_PATH = "/home/tarena/serverfiles/"
-
+# 连接数据库
+msql = mysqltool.Mysqltool('tt')
+msql.open()
 class FtpServer():
     def __init__(self,connfd):
         self.connfd = connfd
-    def do_list(self):
-        print("执行list")
-        # 获取文件列表
-        file_list = os.listdir(FILE_PATH)
-        if not file_list:
-            self.connfd.send("文件库为空")
+    def do_register(self,data,connfd):
+        l = data.split(' ')
+        username = l[1]
+        password = l[2]
+        # 进入数据库查找用户名 
+        self.linkDB(connfd,username,password)
+
+    def do_login(self,data,connfd):
+        l = data.split(' ')
+        username = l[1]
+        password = l[2]
+        # 进入数据库进行比对
+        sql = "select username from userinfo where username=%s and password=%s"
+        try:
+            info = msql.all(sql,[username,password])
+            print(info)
+        except:
+            print("服务器查询失败")
+            # 发送失败标志
+            connfd.send(b'ServerError')
             return
+        if info != ():
+            print("ok")
+            # 发送登录成功标志
+            connfd.send(b'SUCCESS')
         else:
-            self.connfd.send(b'ok')
-            time.sleep(0.1)
+            connfd.send(b'FAIL')
         
-        files = ''
-        for file in file_list:
-            if file[0]!='.' and os.path.isfile(FILE_PATH+file):
-                files = files+file+'#'
-        # 将拼接号的文件名字节串发送给客户端
-        self.connfd.sendall(files.encode())
     def do_download(self,filename):
         try:
             fd = open(FILE_PATH+filename,'rb')
@@ -70,6 +86,58 @@ class FtpServer():
                 break
             fd.write(data)
         fd.close()
+    def linkDB(self,connfd,username,password):
+        try:
+            l = msql.all("select username from userinfo")
+        except:
+            print("数据库出错!")
+            connfd.send(b'Error')
+            return
+        for i in l:
+            if i[0] == username:
+                # 用户已存在
+                connfd.send(b'USED')
+                return
+        # 将数据存入数据库
+        sql = "insert into userinfo(username,password) values('%s','%s')"%(username,password)
+        try:
+            msql.insert_update_delete(sql)
+        except:
+            print("插入数据库失败")
+            connfd.send(b'Error')
+            msql.close()
+            return
+        # 插入数据库成功
+        connfd.send(b"OK")
+        return
+
+def handle(connfd):
+    ftp = FtpServer(connfd)
+    while True:
+        try:
+            data = connfd.recv(1024).decode()
+            print(data,"118")
+        except:
+            connfd.close()
+            sys.exit("客户端断开")
+        if not data or data[0]=="Q":
+            print("in,123")
+            connfd.close()
+            sys.exit(0)
+        elif data[0] == "R":#代表发来的是注册信息
+            ftp.do_register(data,connfd)
+        elif data[0] == 'L':#代表发来的是登录消息
+            ftp.do_login(data,connfd)
+        elif data[0] == 'U':
+            filename = data.split(" ")[-1]
+            ftp.do_upload(filename)
+
+        # 发来聊天信息请求
+        elif data[0] == "C":
+            friend_list = ["张三","李四"]
+            connfd.send(friend_list.decode())
+    connfd.close()
+    sys.exit("客户端断开")
 
 # 创建网络连接
 def main():
@@ -93,55 +161,36 @@ def main():
         print("连接客户端：",addr)
 
         # 创建子进程
-        pid = os.fork()
-        if pid == 0:
-            p = os.fork()
-            if p == 0:
-                sockfd.close()
-                ftp = FtpServer(connfd)
-                while True:
-                    data = connfd.recv(1024).decode()
-                    if not data or data[0]=="Q":
-                        connfd.close()
-                        sys.exit("客户端退出")
-                    elif data[0] == "L":
-                        ftp.do_list()
-                    elif data[0] == 'D':
-                        filename = data.split(" ")[-1]
-                        ftp.do_download(filename)
-                    elif data[0] == 'U':
-                        filename = data.split(" ")[-1]
-                        ftp.do_upload(filename)
-            else:
-                os._exit(0)
-        else:
-            connfd.close()
-            os.wait()
-
-
+        p = Process(target=handle,args=(connfd,))
+        p.daemon = True
+        p.start()
+        # pid = os.fork()
+        # if pid == 0:
+        #     p = os.fork()
+        #     if p == 0:
+        #         sockfd.close()
+        #         ftp = FtpServer(connfd)
+        #         while True:
+        #             data = connfd.recv(1024).decode()
+        #             if not data or data[0]=="Q":
+        #                 connfd.close()
+        #                 sys.exit("客户端退出")
+        #             elif data[0] == "R":#代表发来的是注册信息
+        #                 ftp.do_register(data,connfd)
+        #             elif data[0] == 'D':
+        #                 filename = data.split(" ")[-1]
+        #                 ftp.do_download(filename)
+        #             elif data[0] == 'U':
+        #                 filename = data.split(" ")[-1]
+        #                 ftp.do_upload(filename)
+        #     else:
+        #         os._exit(0)
+        # else:
+        #     connfd.close()
+        #     os.wait()
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
