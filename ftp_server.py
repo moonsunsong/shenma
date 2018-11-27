@@ -66,19 +66,23 @@ class FtpServer():
                 break
             self.connfd.send(data)
         
-    def do_upload(self,filename):
-        filelist = os.listdir(FILE_PATH)
+    def do_upload(self,filename,username):
+        try:
+            filelist = os.listdir(FILE_PATH+username)
+        except FileNotFoundError:
+            os.mkdir(FILE_PATH+username)
+            filelist = os.listdir(FILE_PATH+username)
         if filename in filelist:
             self.connfd.send("文件已经存在".encode())
             return
         try:
-            fd = open(FILE_PATH+filename,'wb')
+            fd = open(FILE_PATH+username+"/"+filename,'wb')
         except:
             self.connfd.send("服务器异常".encode())
             return
         else:
             self.connfd.send(b'ok')
-            time.sleep(0.1)
+            time.sleep(0.2)
         while True:
             data = self.connfd.recv(1024)
             if data == b'##':
@@ -127,8 +131,9 @@ def handle(connfd):
         elif data[0] == 'L':#代表发来的是登录消息
             ftp.do_login(data,connfd)
         elif data[0] == 'U':#代表发来的是上传请求
-            filename = data.split(" ")[-1]
-            ftp.do_upload(filename)
+            filename = data.split(" ")[-2]
+            username = data.split(" ")[-1]
+            ftp.do_upload(filename,username)
     connfd.close()
     sys.exit("客户端断开")
 

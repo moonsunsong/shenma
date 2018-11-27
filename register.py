@@ -102,8 +102,8 @@ class Register_UI_Control(Ui_register.Ui_MainWindow,QMainWindow):
         password = self.linePass.text()
         password2 = self.linePass2.text()
         # 验证用户名和密码是否合法
-        if " " in username or " " in password:
-            QMessageBox.about(self,'警告','请勿使用空格!')
+        if " " in username or " " in password or "/" in username:
+            QMessageBox.about(self,'警告','请勿使用非法字符!')
             return
         if not username or not password or not password2:
             QMessageBox.about(self,'警告','请填写完整信息!')
@@ -155,7 +155,7 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
             print("文件打开失败")
             return
         filename = fileaddr.split("/")[-1]
-        self.sockfd.send(('U '+filename).encode())
+        self.sockfd.send(('U '+filename+" "+self.username).encode())
         data = self.sockfd.recv(128).decode()
         if data == 'ok':
             while True:
