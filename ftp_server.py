@@ -14,7 +14,7 @@ HOST = '0.0.0.0'
 PORT = 7777
 ADDR = (HOST,PORT)
 
-FILE_PATH = "/home/tarena/serverfiles/"
+FILE_PATH = "E:/data/"
 # 连接数据库
 msql = mysqltool.Mysqltool('tt')
 msql.open()
@@ -116,19 +116,17 @@ def handle(connfd):
     while True:
         try:
             data = connfd.recv(1024).decode()
-            print(data,"118")
         except:
             connfd.close()
             sys.exit("客户端断开")
         if not data or data[0]=="Q":
-            print("in,123")
             connfd.close()
             sys.exit(0)
         elif data[0] == "R":#代表发来的是注册信息
             ftp.do_register(data,connfd)
         elif data[0] == 'L':#代表发来的是登录消息
             ftp.do_login(data,connfd)
-        elif data[0] == 'U':
+        elif data[0] == 'U':#代表发来的是上传请求
             filename = data.split(" ")[-1]
             ftp.do_upload(filename)
     connfd.close()

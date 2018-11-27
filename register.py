@@ -1,7 +1,7 @@
 '''
 这是界面的控制代码
 '''
-from PyQt5.QtWidgets import QWidget,QApplication,QMainWindow,QMessageBox,QLabel
+from PyQt5.QtWidgets import QWidget,QApplication,QMainWindow,QMessageBox,QLabel,QFileDialog
 # from Ui_register import *
 import Ui_register
 import Ui_login
@@ -49,7 +49,7 @@ class Login_UI(Ui_login.Ui_MainWindow,QMainWindow):
             # 登录成功,初始化网盘客户端界面,隐藏登录界面
             # 传递套接字和用户名
             self.hide()
-            self.mainUI = Main_UI(self.ui_control.sockfd,self.username)
+            self.mainUI = Main_UI(self.ui_control.sockfd,self.username,self.password)
             self.mainUI.show()
 
         elif r == 'FAIL':
@@ -127,10 +127,11 @@ class Register_UI_Control(Ui_register.Ui_MainWindow,QMainWindow):
             return
 
 class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
-    def __init__(self,sockfd,username):
+    def __init__(self,sockfd,username,password):
         super().__init__()
         self.sockfd = sockfd
         self.username = username
+        self.password = password
         self.setupUi(self)
         self.initUI()
     def initUI(self):
@@ -144,8 +145,31 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
     def getFileList(self,sockfd):
         pass
     def uploadFile(self):
-        pass
-
+        fileinfo = QFileDialog.getOpenFileName(self,"打开文件","./")
+        fileaddr = fileinfo[0]
+        self.doUpload(fileaddr)
+    def doUpload(self,fileaddr):
+        try:
+            fd = open(fileaddr,'rb')
+        except:
+            print("文件打开失败")
+            return
+        filename = fileaddr.split("/")[-1]
+        self.sockfd.send(('U '+filename).encode())
+        data = self.sockfd.recv(128).decode()
+        if data == 'ok':
+            while True:
+                data = fd.read(1024)
+                if not data:
+                    self.sockfd.send(b'##')
+                    self.sockfd.close()
+                    break
+                self.sockfd.send(data)
+            self.sockfd.close()
+            print("文件传输完毕")
+        else:
+            print(data)
+        
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
