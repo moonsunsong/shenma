@@ -65,7 +65,7 @@ class FtpServer():
                 self.connfd.send(b'##')
                 break
             self.connfd.send(data)
-        
+      
     def do_upload(self,filename,username):
         try:
             filelist = os.listdir(FILE_PATH+username)

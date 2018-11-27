@@ -9,6 +9,7 @@ import Ui_main
 from PyQt5.QtCore import Qt,QRect
 import sys
 from socket import *
+import time
 
 HOST = '176.209.102.47'
 PORT = 7777
@@ -161,6 +162,7 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
             while True:
                 data = fd.read(1024)
                 if not data:
+                    time.sleep(0.5)
                     self.sockfd.send(b'##')
                     self.sockfd.close()
                     break
