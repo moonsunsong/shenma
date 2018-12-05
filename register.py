@@ -1,12 +1,13 @@
 '''
 这是界面的控制代码
 '''
-from PyQt5.QtWidgets import QWidget,QApplication,QMainWindow,QMessageBox,QLabel,QFileDialog
+from PyQt5.QtWidgets import QWidget,QApplication,QMainWindow,QMessageBox,QLabel,QFileDialog,QCheckBox,QFormLayout
 # from Ui_register import *
 import Ui_register
 import Ui_login
 import Ui_main
 from PyQt5.QtCore import Qt,QRect
+from PyQt5.QtGui import QIcon,QPixmap
 import sys
 from socket import *
 import time
@@ -14,6 +15,9 @@ import time
 HOST = '176.209.102.47'
 PORT = 7777
 ADDR = (HOST,PORT)
+
+#存放组件的列表
+l = []
 
 def varify_info(sockfd,username,password,mod):
     msg = mod+" %s %s"%(username,password)
@@ -138,10 +142,12 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
     def initUI(self):
         # 显示用户信息至界面
         self.laUsername.setText(self.username)
+        self.refreshlist()
         # 显示用户的文件列表
         self.getFileList(self.sockfd)
         # 绑定上传按钮功能
         self.btnUpload.clicked.connect(self.uploadFile)
+        # 绑定下载功能按钮
 
     def getFileList(self,sockfd):
         pass
@@ -164,14 +170,48 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
                 if not data:
                     time.sleep(0.5)
                     self.sockfd.send(b'##')
-                    self.sockfd.close()
                     break
                 self.sockfd.send(data)
-            self.sockfd.close()
             print("文件传输完毕")
+            # 刷新客户端界面
+            self.refreshlist()
         else:
             print(data)
-        
+    def refreshlist(self):
+        for f in l:
+            self.formLayout_3.removeRow(f)
+        # 刷新后清空列表
+        l.clear()
+        try:
+            self.sockfd.send(('F '+self.username).encode())
+        except:
+            print("无法连接服务器")
+            return
+        data = self.sockfd.recv(1024).decode()
+        if data == 'ok':
+            data = self.sockfd.recv(4096).decode()
+            if data == "":
+                return
+            files = data.split('#')
+            for file in files:
+                if file == "":
+                    continue
+                self.createWidget(file)
+        else:
+            print(data)
+        widgets = self.formLayout_3.findChild((QWidget,),"checkbox")
+        print(widgets)
+    def createWidget(self,filename):
+        file = QCheckBox(self.formLayoutWidget)
+        l.append(file)
+        file.setText(filename)
+        icon = QIcon()
+        icon.addPixmap(QPixmap("C:/Users/tarena/Desktop/捕获.PNG"), QIcon.Normal, QIcon.Off)
+        file.setIcon(icon)
+        file.setObjectName("checkBox")
+        # 添加组件至表单布局
+        self.formLayout_3.addRow(file)
+        return file
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
