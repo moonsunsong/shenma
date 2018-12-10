@@ -14,7 +14,7 @@ HOST = '0.0.0.0'
 PORT = 7777
 ADDR = (HOST,PORT)
 
-FILE_PATH = "/home/tarena/serverfiles/"
+FILE_PATH = "E:/data/"
 # 连接数据库
 msql = mysqltool.Mysqltool('tt')
 msql.open()
@@ -66,19 +66,23 @@ class FtpServer():
                 break
             self.connfd.send(data)
         
-    def do_upload(self,filename):
-        filelist = os.listdir(FILE_PATH)
+    def do_upload(self,filename,username):
+        try:
+            filelist = os.listdir(FILE_PATH+username)
+        except FileNotFoundError:
+            os.mkdir(FILE_PATH+username)
+            filelist = os.listdir(FILE_PATH+username)
         if filename in filelist:
             self.connfd.send("文件已经存在".encode())
             return
         try:
-            fd = open(FILE_PATH+filename,'wb')
+            fd = open(FILE_PATH+username+"/"+filename,'wb')
         except:
             self.connfd.send("服务器异常".encode())
             return
         else:
             self.connfd.send(b'ok')
-            time.sleep(0.1)
+            time.sleep(0.2)
         while True:
             data = self.connfd.recv(1024)
             if data == b'##':
@@ -111,31 +115,34 @@ class FtpServer():
         connfd.send(b"OK")
         return
 
+
+    # def do_chat(self,username,data,connfd):
+        
 def handle(connfd):
     ftp = FtpServer(connfd)
     while True:
         try:
             data = connfd.recv(1024).decode()
-            print(data,"118")
         except:
             connfd.close()
             sys.exit("客户端断开")
         if not data or data[0]=="Q":
-            print("in,123")
             connfd.close()
             sys.exit(0)
         elif data[0] == "R":#代表发来的是注册信息
             ftp.do_register(data,connfd)
         elif data[0] == 'L':#代表发来的是登录消息
             ftp.do_login(data,connfd)
-        elif data[0] == 'U':
-            filename = data.split(" ")[-1]
-            ftp.do_upload(filename)
+        elif data[0] == 'U':#代表发来的是上传请求
+            filename = data.split(" ")[-2]
+            username = data.split(" ")[-1]
+            ftp.do_upload(filename,username)
 
-        # 发来聊天信息请求
-        elif data[0] == "C":
-            friend_list = ["张三","李四"]
-            connfd.send(friend_list.decode())
+
+        # # 发来聊天信息请求
+        # elif data[0] == "C":
+        #     ftp.do_chat(username,data,connfd)
+           
     connfd.close()
     sys.exit("客户端断开")
 

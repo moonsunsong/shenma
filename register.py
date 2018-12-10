@@ -1,7 +1,7 @@
 '''
 这是界面的控制代码
 '''
-from PyQt5.QtWidgets import QWidget,QApplication,QMainWindow,QMessageBox,QLabel
+from PyQt5.QtWidgets import QWidget,QApplication,QMainWindow,QMessageBox,QLabel,QFileDialog
 # from Ui_register import *
 import Ui_register
 import Ui_login
@@ -10,6 +10,7 @@ from Ui_chat import *
 from PyQt5.QtCore import Qt,QRect
 import sys
 from socket import *
+import time
 
 HOST = '176.209.102.47'
 PORT = 7777
@@ -50,7 +51,7 @@ class Login_UI(Ui_login.Ui_MainWindow,QMainWindow):
             # 登录成功,初始化网盘客户端界面,隐藏登录界面
             # 传递套接字和用户名
             self.hide()
-            self.mainUI = Main_UI(self.ui_control.sockfd,self.username)
+            self.mainUI = Main_UI(self.ui_control.sockfd,self.username,self.password)
             self.mainUI.show()
 
         elif r == 'FAIL':
@@ -103,8 +104,8 @@ class Register_UI_Control(Ui_register.Ui_MainWindow,QMainWindow):
         password = self.linePass.text()
         password2 = self.linePass2.text()
         # 验证用户名和密码是否合法
-        if " " in username or " " in password:
-            QMessageBox.about(self,'警告','请勿使用空格!')
+        if " " in username or " " in password or "/" in username:
+            QMessageBox.about(self,'警告','请勿使用非法字符!')
             return
         if not username or not password or not password2:
             QMessageBox.about(self,'警告','请填写完整信息!')
@@ -127,11 +128,12 @@ class Register_UI_Control(Ui_register.Ui_MainWindow,QMainWindow):
             QMessageBox.about(self,'警告','服务器故障!')
             return
 
-class Main_UI(Ui_main.Ui_MainWindow,QMainWindow,Ui_CMainWindow):
-    def __init__(self,sockfd,username):
+class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
+    def __init__(self,sockfd,username,password):
         super().__init__()
         self.sockfd = sockfd
         self.username = username
+        self.password = password
         self.setupUi(self)
         self.initUI()
     def initUI(self):
@@ -141,16 +143,47 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow,Ui_CMainWindow):
         self.getFileList(self.sockfd)
         # 绑定上传按钮功能
         self.btnUpload.clicked.connect(self.uploadFile)
+        
+        # 绑定聊天功能按钮
+        self.chat.clicked.connect(self.Chat)
+        
 
     def getFileList(self,sockfd):
         pass
     def uploadFile(self):
-        pass
-
-    # 聊天界面
-    # def Chat_Client(self,sockfd,username):
-    #     self.
-
+        fileinfo = QFileDialog.getOpenFileName(self,"打开文件","./")
+        fileaddr = fileinfo[0]
+        self.doUpload(fileaddr)
+    def doUpload(self,fileaddr):
+        try:
+            fd = open(fileaddr,'rb')
+        except:
+            print("文件打开失败")
+            return
+        filename = fileaddr.split("/")[-1]
+        self.sockfd.send(('U '+filename+" "+self.username).encode())
+        data = self.sockfd.recv(128).decode()
+        if data == 'ok':
+            while True:
+                data = fd.read(1024)
+                if not data:
+                    time.sleep(0.5)
+                    self.sockfd.send(b'##')
+                    self.sockfd.close()
+                    break
+                self.sockfd.send(data)
+            self.sockfd.close()
+            print("文件传输完毕")
+        else:
+            print(data)
+        
+    # #用户聊天信息请求
+    # def Chat(self,sockfd,username):
+    #     data = 'C' + self.insertPlainText()
+    #     text = 'z张三' + '  ' + "%02d:%02d:%02d" % time.localtime()[3:6] + '\n' + data +'\n'
+    #     tldata = 'z张三' + ' ' + '李四' + ' ' + text
+    #     self.sockfd.send(tldata.encode())
+    #     self.textBrowser.append(text)
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     # 注册界面初始化

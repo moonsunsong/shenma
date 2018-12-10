@@ -45,6 +45,11 @@ class Ui_MainWindow(object):
         self.btnUpload = QtWidgets.QPushButton(self.centralwidget)
         self.btnUpload.setGeometry(QtCore.QRect(290, 20, 75, 23))
         self.btnUpload.setObjectName("btnUpload")
+
+        self.chat = QtWidgets.QPushButton(self.centralwidget)
+        self.chat.setGeometry(QtCore.QRect(260, 10, 45, 43))
+        self.chat.setObjectName("chat")
+
         self.btndoownload = QtWidgets.QPushButton(self.centralwidget)
         self.btndoownload.setGeometry(QtCore.QRect(390, 20, 75, 23))
         self.btndoownload.setObjectName("btndoownload")
@@ -110,6 +115,9 @@ class Ui_MainWindow(object):
         self.laUsername.setText(_translate("MainWindow", "myname"))
         self.label_10.setText(_translate("MainWindow", "文件名"))
         self.btnUpload.setText(_translate("MainWindow", "上传"))
+
+        self.chat.setText(_translate("MainWindow", "聊天"))
+        
         self.btndoownload.setText(_translate("MainWindow", "下载"))
         self.upload.setText(_translate("MainWindow", "上传速度:"))
         self.uploadS.setText(_translate("MainWindow", "0 KB/s"))
