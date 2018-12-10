@@ -30,7 +30,7 @@
      <pixmap>C:/Users/tarena/Desktop/favicon.png</pixmap>
     </property>
    </widget>
-   <widget class="QLabel" name="username">
+   <widget class="QLabel" name="laUsername">
     <property name="geometry">
      <rect>
       <x>70</x>
@@ -70,34 +70,16 @@
        <height>339</height>
       </rect>
      </property>
-     <widget class="QLabel" name="label_9">
+     <widget class="QWidget" name="formLayoutWidget">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>54</width>
-        <height>51</height>
+        <x>0</x>
+        <y>0</y>
+        <width>221</width>
+        <height>341</height>
        </rect>
       </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="pixmap">
-       <pixmap>C:/Users/tarena/Desktop/favicon.png</pixmap>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_10">
-      <property name="geometry">
-       <rect>
-        <x>80</x>
-        <y>11</y>
-        <width>54</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>文件名</string>
-      </property>
+      <layout class="QFormLayout" name="formLayout_3"/>
      </widget>
     </widget>
    </widget>

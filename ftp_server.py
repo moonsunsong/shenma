@@ -65,7 +65,7 @@ class FtpServer():
                 self.connfd.send(b'##')
                 break
             self.connfd.send(data)
-        
+      
     def do_upload(self,filename,username):
         try:
             filelist = os.listdir(FILE_PATH+username)
@@ -118,6 +118,24 @@ class FtpServer():
 
     # def do_chat(self,username,data,connfd):
         
+    def do_list(self,username):
+        # 获取文件列表
+        try:
+            file_list = os.listdir(FILE_PATH+username)
+            if not file_list:
+                self.connfd.send("文件库为空")
+                return
+            else:
+                self.connfd.send(b'ok')
+                time.sleep(0.1)
+            
+            files = ''
+            for file in file_list:
+                files = files+file+'#'
+            # 将拼接号的文件名字节串发送给客户端
+            self.connfd.sendall(files.encode())
+        except FileNotFoundError:
+            os.mkdir(FILE_PATH+username)
 def handle(connfd):
     ftp = FtpServer(connfd)
     while True:
@@ -143,8 +161,12 @@ def handle(connfd):
         # elif data[0] == "C":
         #     ftp.do_chat(username,data,connfd)
            
+        elif data[0] == "F":
+            username = data.split(" ")[-1]
+            ftp.do_list(username)
     connfd.close()
     sys.exit("客户端断开")
+
 
 # 创建网络连接
 def main():
