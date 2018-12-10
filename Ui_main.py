@@ -79,7 +79,7 @@ class Ui_MainWindow(object):
         self.d_fileicon = QtWidgets.QLabel(self.d_tab)
         self.d_fileicon.setGeometry(QtCore.QRect(0, 9, 54, 51))
         self.d_fileicon.setText("")
-        self.d_fileicon.setPixmap(QtGui.QPixmap("C:/Users/tarena/Desktop/favicon.png"))
+        self.d_fileicon.setPixmap(QtGui.QPixmap("./pic/favicon.png"))
         self.d_fileicon.setObjectName("d_fileicon")
         self.progressBar = QtWidgets.QProgressBar(self.d_tab)
         self.progressBar.setGeometry(QtCore.QRect(0, 60, 231, 23))

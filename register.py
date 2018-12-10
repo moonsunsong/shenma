@@ -153,6 +153,9 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
         pass
     def uploadFile(self):
         fileinfo = QFileDialog.getOpenFileName(self,"打开文件","./")
+        # 用户如果点击取消,元祖中两个参数都是空字符串
+        if fileinfo[0] == "":
+            return
         fileaddr = fileinfo[0]
         self.doUpload(fileaddr)
     def doUpload(self,fileaddr):
@@ -172,7 +175,7 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
                     self.sockfd.send(b'##')
                     break
                 self.sockfd.send(data)
-            print("文件传输完毕")
+            QMessageBox.about(self,'信息','文件上传完毕!')
             # 刷新客户端界面
             self.refreshlist()
         else:
@@ -199,14 +202,13 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
                 self.createWidget(file)
         else:
             print(data)
-        widgets = self.formLayout_3.findChild((QWidget,),"checkbox")
-        print(widgets)
+
     def createWidget(self,filename):
         file = QCheckBox(self.formLayoutWidget)
         l.append(file)
         file.setText(filename)
         icon = QIcon()
-        icon.addPixmap(QPixmap("C:/Users/tarena/Desktop/捕获.PNG"), QIcon.Normal, QIcon.Off)
+        icon.addPixmap(QPixmap("./pic/file.PNG"), QIcon.Normal, QIcon.Off)
         file.setIcon(icon)
         file.setObjectName("checkBox")
         # 添加组件至表单布局

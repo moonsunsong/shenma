@@ -118,7 +118,6 @@ class FtpServer():
         # 获取文件列表
         try:
             file_list = os.listdir(FILE_PATH+username)
-            print(file_list)
             if not file_list:
                 self.connfd.send("文件库为空")
                 return
@@ -130,7 +129,6 @@ class FtpServer():
             for file in file_list:
                 files = files+file+'#'
             # 将拼接号的文件名字节串发送给客户端
-            print(files)
             self.connfd.sendall(files.encode())
         except FileNotFoundError:
             os.mkdir(FILE_PATH+username)
@@ -155,7 +153,6 @@ def handle(connfd):
             ftp.do_upload(filename,username)
         elif data[0] == "F":
             username = data.split(" ")[-1]
-            print(username)
             ftp.do_list(username)
     connfd.close()
     sys.exit("客户端断开")
