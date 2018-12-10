@@ -12,6 +12,8 @@ from PyQt5.QtGui import QIcon,QPixmap
 import sys
 from socket import *
 import time
+from multiprocessing import Process
+
 
 HOST = '176.209.102.47'
 PORT = 7777
@@ -19,6 +21,14 @@ ADDR = (HOST,PORT)
 
 #存放组件的列表
 l = []
+
+def createProcess(doUpload,fileinfo):
+    # 创建子进程
+    p = Process(target=doUpload,args=(fileinfo,))
+    p.daemon = True
+    p.start()
+    return p
+
 
 def varify_info(sockfd,username,password,mod):
     msg = mod+" %s %s"%(username,password)
@@ -150,7 +160,7 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
         self.btnUpload.clicked.connect(self.uploadFile)
         
         # 绑定聊天功能按钮
-        self.chat.clicked.connect(self.Chat)
+        # self.chat.clicked.connect(self.Chat)
         
         # 绑定下载功能按钮
 
@@ -161,6 +171,7 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
         # 用户如果点击取消,元祖中两个参数都是空字符串
         if fileinfo[0] == "":
             return
+        # p = createProcess(self.doUpload,fileinfo[0])
         fileaddr = fileinfo[0]
         self.doUpload(fileaddr)
     def doUpload(self,fileaddr):
@@ -184,17 +195,8 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
             # 刷新客户端界面
             self.refreshlist()
         else:
-            print(data)
-        
-    # #用户聊天信息请求
-    # def Chat(self,sockfd,username):
-    #     data = 'C' + self.insertPlainText()
-    #     text = 'z张三' + '  ' + "%02d:%02d:%02d" % time.localtime()[3:6] + '\n' + data +'\n'
-    #     tldata = 'z张三' + ' ' + '李四' + ' ' + text
-    #     self.sockfd.send(tldata.encode())
-    #     self.textBrowser.append(text)
+            QMessageBox.about(self,'信息',data)
 
-    
     def refreshlist(self):
         for f in l:
             self.formLayout_3.removeRow(f)
@@ -229,6 +231,9 @@ class Main_UI(Ui_main.Ui_MainWindow,QMainWindow):
         # 添加组件至表单布局
         self.formLayout_3.addRow(file)
         return file
+
+
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

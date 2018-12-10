@@ -9,6 +9,7 @@ import time
 import tools.mysqltool as mysqltool
 from socket import *
 from multiprocessing import Process
+
 # 全局变量设置
 HOST = '0.0.0.0'
 PORT = 7777
@@ -69,7 +70,7 @@ class FtpServer():
     def do_upload(self,filename,username):
         try:
             filelist = os.listdir(FILE_PATH+username)
-        except FileNotFoundError:
+        except:
             os.mkdir(FILE_PATH+username)
             filelist = os.listdir(FILE_PATH+username)
         if filename in filelist:
@@ -123,7 +124,7 @@ class FtpServer():
         try:
             file_list = os.listdir(FILE_PATH+username)
             if not file_list:
-                self.connfd.send("文件库为空")
+                self.connfd.send("文件库为空".encode())
                 return
             else:
                 self.connfd.send(b'ok')
@@ -193,30 +194,6 @@ def main():
         p = Process(target=handle,args=(connfd,))
         p.daemon = True
         p.start()
-        # pid = os.fork()
-        # if pid == 0:
-        #     p = os.fork()
-        #     if p == 0:
-        #         sockfd.close()
-        #         ftp = FtpServer(connfd)
-        #         while True:
-        #             data = connfd.recv(1024).decode()
-        #             if not data or data[0]=="Q":
-        #                 connfd.close()
-        #                 sys.exit("客户端退出")
-        #             elif data[0] == "R":#代表发来的是注册信息
-        #                 ftp.do_register(data,connfd)
-        #             elif data[0] == 'D':
-        #                 filename = data.split(" ")[-1]
-        #                 ftp.do_download(filename)
-        #             elif data[0] == 'U':
-        #                 filename = data.split(" ")[-1]
-        #                 ftp.do_upload(filename)
-        #     else:
-        #         os._exit(0)
-        # else:
-        #     connfd.close()
-        #     os.wait()
 
 if __name__ == "__main__":
     main()
